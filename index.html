@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed Math - Custom Theme</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Default Theme: White-Blue */
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --accent: #3b82f6;
+            --accent-light: #dbeafe;
+            --accent-dark: #1d4ed8;
+            --success: #10b981;
+            --error: #ef4444;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .theme-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .theme-input {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+            transition: all 0.2s;
+        }
+        .theme-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-light);
+            outline: none;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+            transition: all 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: var(--accent-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-secondary {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+        .btn-secondary:hover {
+            background-color: var(--border);
+        }
+
+        .text-accent { color: var(--accent); }
+        .bg-accent-light { background-color: var(--accent-light); }
+        .border-accent { border-color: var(--accent); }
+
+        /* Animations */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-up { animation: slideUp 0.4s ease-out; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .shake { animation: shake 0.3s ease-in-out; }
+
+        @keyframes pulse-red {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+        }
+        .error-pulse { animation: pulse-red 0.5s ease-out; }
+
+        /* Progress Bar */
+        .progress-container {
+            background-color: var(--bg-tertiary);
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background-color: var(--accent);
+            transition: width 0.1s linear, background-color 0.3s;
+        }
+
+        /* Theme Selector Active State */
+        .theme-option.active {
+            ring-width: 2px;
+            ring-color: var(--accent);
+            border-color: var(--accent);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <!-- Main Container -->
+    <div class="w-full max-w-md">
+        
+        <!-- Header / Theme Selector -->
+        <div class="mb-6 flex justify-between items-center">
+            <h1 class="text-2xl font-bold tracking-tight">Speed Math</h1>
+            
+            <!-- Theme Toggle -->
+            <div class="flex gap-2 p-1 bg-gray-200/50 rounded-lg">
+                <button onclick="setTheme('blue')" class="theme-btn w-8 h-8 rounded bg-blue-500 hover:scale-110 transition-transform" title="White-Blue"></button>
+                <button onclick="setTheme('black')" class="theme-btn w-8 h-8 rounded bg-slate-800 hover:scale-110 transition-transform" title="White-Black"></button>
+                <button onclick="setTheme('brown')" class="theme-btn w-8 h-8 rounded bg-amber-700 hover:scale-110 transition-transform" title="White-Brown"></button>
+            </div>
+        </div>
+
+        <!-- START SCREEN -->
+        <div id="startScreen" class="theme-card rounded-2xl p-8 text-center animate-slide-up">
+            <div class="mb-6">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-accent-light flex items-center justify-center">
+                    <svg class="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <h2 class="text-xl font-semibold mb-2">Select Difficulty</h2>
+                <p class="text-sm text-secondary" style="color: var(--text-secondary)">Solve as fast as you can!</p>
+            </div>
+
+            <div class="space-y-3 mb-6">
+                <button onclick="startGame('easy')" class="w-full py-3 px-4 rounded-xl btn-secondary font-medium flex justify-between items-center group">
+                    <span>Easy</span>
+                    <span class="text-xs opacity-50 group-hover:opacity-100">+ −</span>
+                </button>
+                <button onclick="startGame('medium')" class="w-full py-3 px-4 rounded-xl btn-secondary font-medium flex justify-between items-center group">
+                    <span>Medium</span>
+                    <span class="text-xs opacity-50 group-hover:opacity-100">+ − ×</span>
+                </button>
+                <button onclick="startGame('hard')" class="w-full py-3 px-4 rounded-xl btn-secondary font-medium flex justify-between items-center group">
+                    <span>Hard</span>
+                    <span class="text-xs opacity-50 group-hover:opacity-100">+ − × ÷</span>
+                </button>
+            </div>
+
+            <div class="pt-4 border-t" style="border-color: var(--border)">
+                <div class="flex justify-between text-sm mb-1">
+                    <span style="color: var(--text-secondary)">High Score</span>
+                    <span class="font-bold" id="highScoreDisplay">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- GAME SCREEN -->
+        <div id="gameScreen" class="hidden theme-card rounded-2xl p-6">
+            
+            <!-- HUD -->
+            <div class="flex justify-between items-center mb-6">
+                <div class="text-center">
+                    <div class="text-xs mb-1" style="color: var(--text-secondary)">SCORE</div>
+                    <div class="text-2xl font-bold font-mono" id="scoreDisplay">0</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-xs mb-1" style="color: var(--text-secondary)">STREAK</div>
+                    <div class="text-xl font-bold text-accent" id="streakDisplay">0</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-xs mb-1" style="color: var(--text-secondary)">LEVEL</div>
+                    <div class="text-xl font-bold" id="levelDisplay">1</div>
+                </div>
+            </div>
+
+            <!-- Timer Bar -->
+            <div class="mb-8">
+                <div class="flex justify-between text-xs mb-2" style="color: var(--text-secondary)">
+                    <span>Time</span>
+                    <span id="timePercent">100%</span>
+                </div>
+                <div class="progress-container h-3">
+                    <div id="timerBar" class="progress-fill h-full rounded-full" style="width: 100%"></div>
+                </div>
+            </div>
+
+            <!-- Problem Display -->
+            <div class="text-center mb-8 py-8 rounded-xl bg-accent-light/30 border-2 border-dashed border-accent/30">
+                <div class="flex items-center justify-center gap-3 text-5xl font-bold font-mono mb-2">
+                    <span id="num1">0</span>
+                    <span id="operator" class="text-accent">+</span>
+                    <span id="num2">0</span>
+                    <span>=</span>
+                    <span id="answerDisplay" class="text-gray-400">?</span>
+                </div>
+                <div id="feedback" class="h-6 text-sm font-semibold tracking-wide"></div>
+            </div>
+
+            <!-- Input -->
+            <div class="mb-6">
+                <input type="text" id="answerInput" readonly 
+                    class="theme-input w-full text-center text-4xl font-bold font-mono py-4 rounded-xl" 
+                    placeholder="0">
+            </div>
+
+            <!-- Keypad -->
+            <div class="grid grid-cols-3 gap-2">
+                <button class="keypad-btn py-4 rounded-lg btn-secondary text-xl font-semibold" onclick="press('1')">1</button>
+                <button class="keypad-btn py-4 rounded-lg btn-secondary text-xl font-semibold" onclick="press('2')">2</button>
+                <button class="keypad-btn py-4 rounded-lg btn-secondary text-xl font-semibold" onclick="press('3')">3</button>
+                <button class="keypad-btn py-4 rounded-lg btn-secondary text-xl font-semibold" onclick="press('4')">4</button>
+                <button class="keypad-btn py-4 rounded-lg btn-secondary text-xl font-semibold" onclick="press('5')">5</button>
+                <button class="keypad-btn py-4 rounded-lg btn-secondary text-xl font-semibold" onclick="press('6')">6</button>
+                <button class="keypad-btn py-4 rounded-lg btn-secondary text-xl font-semibold" onclick="press('7')">7</button>
+                <button class="keypad-btn py-4 rounded-lg btn-secondary text-xl font-semibold" onclick="press('8')">8</button>
+                <button class="keypad-btn py-4 rounded-lg btn-secondary text-xl font-semibold" onclick="press('9')">9</button>
+                <button class="keypad-btn py-4 rounded-lg bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 text-lg font-semibold" onclick="press('DEL')">DEL</button>
+                <button class="keypad-btn py-4 rounded-lg btn-secondary text-xl font-semibold" onclick="press('0')">0</button>
+                <button class="keypad-btn py-4 rounded-lg btn-primary text-lg font-bold" onclick="press('ENTER')">GO</button>
+            </div>
+        </div>
+
+        <!-- GAME OVER SCREEN -->
+        <div id="gameOverScreen" class="hidden theme-card rounded-2xl p-8 text-center">
+            <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold mb-2">Time's Up!</h2>
+            <div class="text-4xl font-bold font-mono mb-2 text-accent" id="finalScore">0</div>
+            <p class="text-sm mb-6" style="color: var(--text-secondary)">Final Score</p>
+            
+            <button onclick="showStartScreen()" class="w-full py-3 rounded-xl btn-primary font-semibold">
+                Play Again
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Themes Configuration ---
+        const themes = {
+            blue: {
+                '--bg-primary': '#f8fafc',
+                '--bg-secondary': '#ffffff',
+                '--bg-tertiary': '#f1f5f9',
+                '--text-primary': '#0f172a',
+                '--text-secondary': '#64748b',
+                '--accent': '#3b82f6',
+                '--accent-light': '#dbeafe',
+                '--accent-dark': '#1d4ed8',
+                '--success': '#10b981',
+                '--error': '#ef4444',
+                '--border': '#e2e8f0'
+            },
+            black: {
+                '--bg-primary': '#f1f5f9',
+                '--bg-secondary': '#ffffff',
+                '--bg-tertiary': '#e2e8f0',
+                '--text-primary': '#020617',
+                '--text-secondary': '#475569',
+                '--accent': '#0f172a',
+                '--accent-light': '#e2e8f0',
+                '--accent-dark': '#000000',
+                '--success': '#059669',
+                '--error': '#dc2626',
+                '--border': '#cbd5e1'
+            },
+            brown: {
+                '--bg-primary': '#fafaf9',
+                '--bg-secondary': '#ffffff',
+                '--bg-tertiary': '#f5f5f4',
+                '--text-primary': '#451a03',
+                '--text-secondary': '#78716c',
+                '--accent': '#92400e',
+                '--accent-light': '#fef3c7',
+                '--accent-dark': '#78350f',
+                '--success': '#65a30d',
+                '--error': '#dc2626',
+                '--border': '#e7e5e4'
+            }
+        };
+
+        function setTheme(themeName) {
+            const root = document.documentElement;
+            const theme = themes[themeName];
+            
+            for (const [key, value] of Object.entries(theme)) {
+                root.style.setProperty(key, value);
+            }
+            
+            // Save preference
+            localStorage.setItem('mathGameTheme', themeName);
+        }
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('mathGameTheme') || 'blue';
+        setTheme(savedTheme);
+
+        // --- Game State ---
+        let state = {
+            score: 0,
+            streak: 0,
+            level: 1,
+            timeLeft: 100,
+            maxTime: 100,
+            isPlaying: false,
+            difficulty: 'medium',
+            problem: {},
+            highScore: parseInt(localStorage.getItem('mathHighScore')) || 0,
+            timerInterval: null
+        };
+
+        // --- Audio ---
+        let synth;
+        async function initAudio() {
+            if (!synth) {
+                await Tone.start();
+                synth = new Tone.PolySynth(Tone.Synth).toDestination();
+                synth.volume.value = -10;
+            }
+        }
+
+        function playSound(type) {
+            if (!synth) return;
+            const now = Tone.now();
+            switch(type) {
+                case 'click': synth.triggerAttackRelease("C5", "32n", now); break;
+                case 'correct': synth.triggerAttackRelease(["E5", "G5"], "16n", now); break;
+                case 'wrong': synth.triggerAttackRelease(["A3", "C3"], "8n", now); break;
+                case 'gameover': synth.triggerAttackRelease(["C4", "B3", "A3"], "8n", now); break;
+            }
+        }
+
+        // --- Game Logic ---
+        function showStartScreen() {
+            document.getElementById('startScreen').classList.remove('hidden');
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            document.getElementById('highScoreDisplay').textContent = state.highScore;
+        }
+
+        function startGame(difficulty) {
+            initAudio();
+            state.difficulty = difficulty;
+            state.score = 0;
+            state.streak = 0;
+            state.level = 1;
+            state.timeLeft = 100;
+            state.isPlaying = true;
+            
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            
+            updateHUD();
+            generateProblem();
+            startTimer();
+        }
+
+        function generateProblem() {
+            let n1, n2, op, answer;
+            const maxNum = 10 + (state.level * 5);
+            
+            // Determine operators based on difficulty
+            let ops = ['+'];
+            if (state.difficulty === 'easy') ops = ['+', '-'];
+            else if (state.difficulty === 'medium') ops = ['+', '-', '*'];
+            else ops = ['+', '-', '*', '/'];
+            
+            op = ops[Math.floor(Math.random() * ops.length)];
+            
+            switch(op) {
+                case '+':
+                    n1 = Math.floor(Math.random() * maxNum) + 1;
+                    n2 = Math.floor(Math.random() * maxNum) + 1;
+                    answer = n1 + n2;
+                    break;
+                case '-':
+                    n1 = Math.floor(Math.random() * maxNum) + 5;
+                    n2 = Math.floor(Math.random() * n1);
+                    answer = n1 - n2;
+                    break;
+                case '*':
+                    n1 = Math.floor(Math.random() * Math.min(maxNum/2, 12)) + 2;
+                    n2 = Math.floor(Math.random() * 10) + 2;
+                    answer = n1 * n2;
+                    break;
+                case '/':
+                    n2 = Math.floor(Math.random() * 10) + 2;
+                    answer = Math.floor(Math.random() * 10) + 2;
+                    n1 = n2 * answer;
+                    break;
+            }
+            
+            state.problem = { n1, n2, op, answer };
+            
+            // Update display
+            document.getElementById('num1').textContent = n1;
+            document.getElementById('operator').textContent = op === '*' ? '×' : op === '/' ? '÷' : op;
+            document.getElementById('num2').textContent = n2;
+            document.getElementById('answerDisplay').textContent = '?';
+            document.getElementById('answerInput').value = '';
+            document.getElementById('feedback').textContent = '';
+        }
+
+        function startTimer() {
+            if (state.timerInterval) clearInterval(state.timerInterval);
+            
+            state.timerInterval = setInterval(() => {
+                if (!state.isPlaying) return;
+                
+                // Decay rate increases with level
+                const decay = 0.3 + (state.level * 0.1);
+                state.timeLeft -= decay;
+                
+                if (state.timeLeft <= 0) {
+                    state.timeLeft = 0;
+                    gameOver();
+                }
+                
+                updateTimer();
+            }, 50);
+        }
+
+        function updateTimer() {
+            const pct = Math.max(0, state.timeLeft);
+            document.getElementById('timerBar').style.width = pct + '%';
+            document.getElementById('timePercent').textContent = Math.floor(pct) + '%';
+            
+            // Color change based on time
+            const bar = document.getElementById('timerBar');
+            if (pct < 30) {
+                bar.style.backgroundColor = 'var(--error)';
+            } else if (pct < 60) {
+                bar.style.backgroundColor = '#f59e0b'; // amber
+            } else {
+                bar.style.backgroundColor = 'var(--accent)';
+            }
+        }
+
+        function updateHUD() {
+            document.getElementById('scoreDisplay').textContent = state.score;
+            document.getElementById('streakDisplay').textContent = state.streak;
+            document.getElementById('levelDisplay').textContent = state.level;
+        }
+
+        function checkAnswer() {
+            const input = document.getElementById('answerInput');
+            const val = parseInt(input.value);
+            
+            if (isNaN(val)) return;
+            
+            if (val === state.problem.answer) {
+                // Correct
+                playSound('correct');
+                state.score += 10 * state.level + (state.streak * 2);
+                state.streak++;
+                state.timeLeft = Math.min(state.timeLeft + 10, 100); // Bonus time
+                
+                if (state.streak % 10 === 0) {
+                    state.level++;
+                    showFeedback('LEVEL UP!', 'success');
+                } else {
+                    showFeedback('Correct!', 'success');
+                }
+                
+                updateHUD();
+                generateProblem();
+            } else {
+                // Wrong
+                playSound('wrong');
+                state.streak = 0;
+                state.timeLeft -= 15; // Penalty
+                
+                const gameUI = document.getElementById('gameScreen');
+                gameUI.classList.add('shake', 'error-pulse');
+                setTimeout(() => gameUI.classList.remove('shake', 'error-pulse'), 500);
+                
+                showFeedback('Wrong!', 'error');
+                input.value = '';
+                updateHUD();
+            }
+        }
+
+        function showFeedback(text, type) {
+            const fb = document.getElementById('feedback');
+            fb.textContent = text;
+            fb.style.color = type === 'success' ? 'var(--success)' : 'var(--error)';
+            
+            setTimeout(() => {
+                if (fb.textContent === text) fb.textContent = '';
+            }, 1000);
+        }
+
+        function gameOver() {
+            state.isPlaying = false;
+            clearInterval(state.timerInterval);
+            playSound('gameover');
+            
+            if (state.score > state.highScore) {
+                state.highScore = state.score;
+                localStorage.setItem('mathHighScore', state.highScore);
+            }
+            
+            document.getElementById('finalScore').textContent = state.score;
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('gameOverScreen').classList.remove('hidden');
+        }
+
+        // --- Input Handling ---
+        function press(key) {
+            if (!state.isPlaying) return;
+            
+            const input = document.getElementById('answerInput');
+            
+            playSound('click');
+            
+            if (key === 'DEL') {
+                input.value = input.value.slice(0, -1);
+            } else if (key === 'ENTER') {
+                checkAnswer();
+            } else {
+                if (input.value.length < 4) {
+                    input.value += key;
+                }
+            }
+        }
+
+        // Keyboard support
+        document.addEventListener('keydown', (e) => {
+            if (!state.isPlaying) {
+                if (e.key === 'Enter' && !document.getElementById('startScreen').classList.contains('hidden')) {
+                    // Start with medium if enter pressed on start screen
+                    if (!document.getElementById('gameScreen').classList.contains('hidden') === false) {
+                         // Don't auto start, let them click
+                    }
+                }
+                return;
+            }
+            
+            if (e.key >= '0' && e.key <= '9') press(e.key);
+            if (e.key === 'Backspace') press('DEL');
+            if (e.key === 'Enter') press('ENTER');
+        });
+
+        // Initialize
+        showStartScreen();
+    </script>
+</body>
+</html>
